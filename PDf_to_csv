@@ -1,0 +1,149 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "mount_file_id": "1E6ZlyQGsO4szocPvKI1YaJws7gyY0PvE",
+      "authorship_tag": "ABX9TyN8Iost+UKZXUSKgVfNcODf",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/Priyanshi8806/Bank-Lending-Decission/blob/main/PDf_to_csv\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 10,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "4mB39EGQ-2wf",
+        "outputId": "742e48bc-28b8-481b-bbe2-d7236621db1a"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: PyPDF2 in /usr/local/lib/python3.10/dist-packages (3.0.1)\n"
+          ]
+        }
+      ],
+      "source": [
+        "!pip install PyPDF2"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import csv\n",
+        "import PyPDF2\n",
+        "\n",
+        "def extract_text_from_pdf(pdf_file):\n",
+        "    try:\n",
+        "        with open(pdf_file, 'rb') as file:\n",
+        "            reader = PyPDF2.PdfReader(file)\n",
+        "            text = []\n",
+        "            for page_num in range(len(reader.pages)):\n",
+        "                page = reader.pages[page_num]\n",
+        "                text.append(page.extract_text())\n",
+        "            return text\n",
+        "    except Exception as e:\n",
+        "        print(f\"Error reading PDF: {e}\")\n",
+        "        return None\n",
+        "\n",
+        "def write_to_csv(data, output_csv):\n",
+        "    try:\n",
+        "        with open(output_csv, mode='w', newline='', encoding='utf-8') as file:\n",
+        "            writer = csv.writer(file)\n",
+        "            writer.writerow(['s_no', 'article_title', 'article_body'])\n",
+        "            for row in data:\n",
+        "                writer.writerow(row)\n",
+        "    except Exception as e:\n",
+        "        print(f\"Error writing to CSV: {e}\")\n",
+        "\n",
+        "def process_articles(text):\n",
+        "    articles = []\n",
+        "    current_title = \"\"\n",
+        "    current_body = []\n",
+        "    s_no = 1.1\n",
+        "\n",
+        "    for line in text.split('\\n'):\n",
+        "        line = line.strip()\n",
+        "        if line:\n",
+        "            # Simple logic to detect a new article title based on numbering and uppercase assumption\n",
+        "            if line[0].isdigit() and '.' in line and line.isupper():\n",
+        "                if current_body:\n",
+        "                    articles.append([s_no, current_title, ' '.join(current_body)])\n",
+        "                    current_body = []\n",
+        "                    s_no += 0.1  # Incrementing for next article serial number\n",
+        "                current_title = line\n",
+        "            else:\n",
+        "                current_body.append(line)\n",
+        "\n",
+        "    if current_body:\n",
+        "        articles.append([s_no, current_title, ' '.join(current_body)])  # Append last article\n",
+        "\n",
+        "    return articles\n",
+        "\n",
+        "def main(pdf_file, output_csv):\n",
+        "    text = extract_text_from_pdf(pdf_file)\n",
+        "    if text:\n",
+        "        joined_text = \" \".join(text)  # Combining all page text into one string\n",
+        "        articles_data = process_articles(joined_text)\n",
+        "        write_to_csv(articles_data, output_csv)\n",
+        "        print(f\"Data successfully written to {output_csv}\")\n",
+        "    else:\n",
+        "        print(\"No data extracted from PDF\")\n",
+        "\n",
+        "if __name__ == \"__main__\":\n",
+        "    pdf_file = '/content/drive/MyDrive/VisionIAS Monthly Current Affairs January 2024 January 2024.pdf'  # Path to your PDF\n",
+        "    output_csv = 'output_articles.csv'  # Output CSV file name\n",
+        "    main(pdf_file, output_csv)\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "QAW19cMm-8Bq",
+        "outputId": "18603dae-e874-439a-964a-bf2a6f010eb6"
+      },
+      "execution_count": 11,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Data successfully written to output_articles.csv\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "_0sKk8xNFxaH"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
